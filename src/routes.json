@@ -1,0 +1,10 @@
+[
+    {
+      "path": "/",
+      "component": "Home"
+    },
+    {
+      "path": "/about",
+      "component": "src/pages/About"
+    }
+]
