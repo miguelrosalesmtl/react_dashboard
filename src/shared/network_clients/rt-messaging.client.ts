@@ -1,9 +1,8 @@
-import PubNub, { MessageEvent, PubnubConfig } from "pubnub";
-import { PUBNUB_STATIC_CHANNELS } from "../../../utils/constants";
-import logger from "../../../utils/logging";
+import PubNub from "pubnub";
+import logger from "../logging/logger"
 import { Observable, Subject } from "rxjs";
 import { useEffect, useState } from "react";
-
+// MessageEvent, PubnubConfig
 // Singleton state to be shared across all hook instances
 let pubnubInstance: PubNub | null = null;
 const subjectMap = new Map<string, Subject<MessageEvent>>();
@@ -15,11 +14,11 @@ const registeredHandlers: string[] = [];
  */
 export function initPubnub(uuid: string): PubNub {
     if (!pubnubInstance) {
-        const pubnubConfig: PubnubConfig = {
-            uuid,
-            publishKey: window?.env?.PUBNUB_PUBLISH_KEY,
-            subscribeKey: window?.env?.PUBNUB_SUBSCRIBE_KEY,
-            restore: true,
+        const pubnubConfig = {
+            userId: uuid,
+            publishKey: process.env.REACT_APP_PUBNUB_PUBLISH_KEY!,
+            subscribeKey: process.env.REACT_APP_PUBNUB_SUBSCRIBE_KEY!,
+            secretKey: process.env.REACT_APP_PUBNUB_SECRET_KEY!,
         };
         pubnubInstance = new PubNub(pubnubConfig);
         logger.info("PubNub client initialized");
@@ -41,9 +40,9 @@ function registerHandler(channelName: string) {
     }
 
     pubnubInstance.addListener({
-        message: (data: MessageEvent) => {
+        message: (message) => {
             if (subjectMap.has(channelName)) {
-                subjectMap.get(channelName)?.next(data);
+                subjectMap.get(channelName)?.next(message);
             }
         },
     });
@@ -130,16 +129,6 @@ export function unsubscribeFromChannel(channelName: string) {
 }
 
 /**
- * DEPRECATED
- * Subscribe to PubNub Global Channels
- */
-export function subscribeToPubNubGlobalChannels(account_uid: string, worker_sid: string, handler: () => void) {
-    const channel = `${PUBNUB_STATIC_CHANNELS.GLOBAL_CONFERENCES}.${account_uid}-${worker_sid}`;
-    subscribeToChannel(channel);
-    handler();
-}
-
-/**
  * React hook for initializing PubNub
  */
 export function usePubnubInit(uuid?: string) {
@@ -152,7 +141,8 @@ export function usePubnubInit(uuid?: string) {
             initPubnub(uuid);
             setIsInitialized(true);
         } catch (error) {
-            logger.error("Error initializing PubNub:", error);
+            console.log(error);
+            //logger.error("Error initializing PubNub:", error);
         }
 
     }, [uuid, isInitialized]);
@@ -163,7 +153,7 @@ export function usePubnubInit(uuid?: string) {
 /**
  * React hook for subscribing to a channel and receiving messages
  */
-export function useChannel<T = any>(channelName: string) {
+export function useChannel<T = never>(channelName: string) {
     const [messages, setMessages] = useState<T[]>([]);
     const [lastMessage, setLastMessage] = useState<T | null>(null);
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -192,7 +182,8 @@ export function useChannel<T = any>(channelName: string) {
         };
     }, [channelName]);
 
-    const publishMessage = (message: any) => {
+    const publishMessage = (message: never) => {
+
         if (!pubnubInstance || !channelName) {
             logger.warn("Cannot publish: PubNub not initialized or no channel specified");
             return Promise.reject("PubNub not initialized or no channel specified");
@@ -221,7 +212,7 @@ export function useChannel<T = any>(channelName: string) {
 /**
  * High-level hook that handles initialization and subscription in one place
  */
-export function usePubnubChannel<T = any>(channelName: string, uuid?: string) {
+export function usePubnubChannel<T = never>(channelName: string, uuid?: string) {
     const isInitialized = usePubnubInit(uuid);
     const channelState = useChannel<T>(isInitialized ? channelName : "");
 

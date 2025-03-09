@@ -1,11 +1,12 @@
 import { Observable, Subject } from "rxjs";
-import logger from "../../../utils/logging";
+import logger from "../../logging/logger";
 
-let websocketInstance;
+
+let websocketInstance: WebSocket;
 const websocketSubjectMap = new Map();
 const websocketSubscriptionCountMap = new Map();
 
-export const initWebSocket = (uuid) => {
+export const initWebSocket = (uuid: never) => {
     websocketInstance = new WebSocket(`wss://your-websocket-url?uuid=${uuid}`);
     websocketInstance.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -19,7 +20,7 @@ export const initWebSocket = (uuid) => {
     };
 };
 
-export const subscribeWebSocket = (channelName) => {
+export const subscribeWebSocket = (channelName: never) => {
     if (!websocketInstance) {
         return logger.warn("WebSocket is not yet instantiated");
     }
@@ -30,7 +31,7 @@ export const subscribeWebSocket = (channelName) => {
     websocketInstance.send(JSON.stringify({ action: "subscribe", channel: channelName }));
 };
 
-export const getWebSocket = (channelName) => {
+export const getWebSocket = (channelName: never) => {
     if (!websocketSubjectMap.has(channelName)) {
         subscribeWebSocket(channelName);
     }
@@ -54,7 +55,7 @@ export const getWebSocket = (channelName) => {
     });
 };
 
-export const unsubscribeWebSocket = (channelName) => {
+export const unsubscribeWebSocket = (channelName: never) => {
     if (!websocketInstance) {
         return logger.warn("WebSocket not yet instantiated");
     }

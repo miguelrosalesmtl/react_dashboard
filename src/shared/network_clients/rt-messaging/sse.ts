@@ -1,11 +1,11 @@
 import { Observable, Subject } from "rxjs";
-import logger from "../../../utils/logging";
+// import logger from "../../../utils/logging";
 
-let sseInstance;
+let sseInstance: EventSource;
 const sseSubjectMap = new Map();
 const sseSubscriptionCountMap = new Map();
 
-export const initSSE = (uuid) => {
+export const initSSE = (uuid: string) => {
     sseInstance = new EventSource(`https://your-sse-url?uuid=${uuid}`);
     sseInstance.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -15,13 +15,15 @@ export const initSSE = (uuid) => {
         }
     };
     sseInstance.onerror = (error) => {
-        logger.error("SSE error:", error);
+        console.error(error);
+        // logger.error("SSE error:", error);
     };
 };
 
-export const subscribeSSE = (channelName) => {
+export const subscribeSSE = (channelName: string) => {
     if (!sseInstance) {
-        return logger.warn("SSE is not yet instantiated");
+        console.error("SSE not yet instantiated");
+        // return logger.warn("SSE is not yet instantiated");
     }
     if (!sseSubjectMap.has(channelName)) {
         sseSubjectMap.set(channelName, new Subject());
@@ -30,7 +32,7 @@ export const subscribeSSE = (channelName) => {
     // No need to send a subscribe message for SSE, as it is handled by the server
 };
 
-export const getSSE = (channelName) => {
+export const getSSE = (channelName: string) => {
     if (!sseSubjectMap.has(channelName)) {
         subscribeSSE(channelName);
     }
@@ -54,12 +56,14 @@ export const getSSE = (channelName) => {
     });
 };
 
-export const unsubscribeSSE = (channelName) => {
+export const unsubscribeSSE = (channelName: string) => {
     if (!sseInstance) {
-        return logger.warn("SSE not yet instantiated");
+        console.error("SSE not yet instantiated");
+        // return logger.warn("SSE not yet instantiated");
     }
     if (!sseSubjectMap.has(channelName)) {
-        return logger.warn(`Channel "${channelName}" is not subscribed`);
+        console.error(`Channel "${channelName}" is not subscribed`);
+        //return logger.warn(`Channel "${channelName}" is not subscribed`);
     }
 
     // No need to send an unsubscribe message for SSE, as it is handled by the server
@@ -68,5 +72,5 @@ export const unsubscribeSSE = (channelName) => {
     sseSubjectMap.delete(channelName);
     sseSubscriptionCountMap.delete(channelName);
 
-    logger.info(`Auto-unsubscribed from channel: ${channelName}`);
+    // logger.info(`Auto-unsubscribed from channel: ${channelName}`);
 };
