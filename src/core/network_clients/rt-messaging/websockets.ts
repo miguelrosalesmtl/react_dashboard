@@ -1,5 +1,5 @@
 import { Observable, Subject } from "rxjs";
-import logger from "../../logging/logger";
+import logger from "../../../shared/logging/logger.ts";
 
 
 let websocketInstance: WebSocket;

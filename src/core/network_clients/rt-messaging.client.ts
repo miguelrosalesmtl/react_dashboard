@@ -1,5 +1,5 @@
 import PubNub from "pubnub";
-import logger from "../logging/logger"
+import logger from "../../shared/logging/logger.ts"
 import { Observable, Subject } from "rxjs";
 import { useEffect, useState } from "react";
 // MessageEvent, PubnubConfig
